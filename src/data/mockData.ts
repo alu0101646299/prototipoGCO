@@ -1,695 +1,272 @@
-import type {
-  CommunityThread,
-  CriticalField,
-  ProcedureOption,
-  RecommendationItem,
-  SeciPhase,
-  StakeholderRole,
-} from "../types/tramita";
+export type ImprovementKey = "sug1" | "sug2" | "cnae" | "cert";
+export type AppliedImprovements = Record<ImprovementKey, boolean>;
+export type SeciPhase = "Socialización" | "Exteriorización" | "Combinación" | "Interiorización";
 
-export const stakeholderRoles: StakeholderRole[] = [
+export interface FunnelStep {
+  number: number;
+  name: string;
+  avgTime: string;
+  baseConversion: number;
+  baseAbandonment: number;
+  note: string;
+}
+
+export interface CriticalField {
+  name: string;
+  step: string;
+  validationErrorPct: number;
+  omittedDocPct: number;
+  status: "Crítico" | "Revisar";
+  improvementKeys: ImprovementKey[];
+}
+
+export interface Recommendation {
+  key: ImprovementKey;
+  title: string;
+  step: string;
+  impactLabel: string;
+  description: string;
+  seciOrigin: string;
+}
+
+export interface CommunityPost {
+  id: string;
+  title: string;
+  author: string;
+  role: "Soporte Técnico" | "Gestor de Trámites";
+  seciPhase: SeciPhase;
+  status: "En análisis" | "Validado en guía oficial";
+  description: string;
+  linkedImprovement?: ImprovementKey;
+}
+
+export const PROCEDURE = {
+  name: "Solicitud de Subvención Digitalización Pymes",
+  siaCode: "2849102",
+  activeFiles: 14820,
+  deadline: "Convocatoria 2026 · Abierta hasta 30 nov 2026",
+};
+
+export const FUNNEL_STEPS: FunnelStep[] = [
   {
-    id: "gestor",
-    label: "Gestor de Procedimientos",
-    userName: "María Sánchez",
-    userTitle: "Encargada de Trámites",
-    initials: "MS",
-    quadrant: "Más poder · Menos interés operativo",
-    powerInterest: "Alta capacidad de decisión normativa y aprobación de cambios",
-    contributes: "Conocimiento sobre normativas, bases reguladoras y requisitos legales.",
-    receives: "Mayor trazabilidad sobre expedientes y propuestas validadas listas para publicar.",
-    focusSummary: "Priorizando embudos de tramitación, tasas de omisión documental y aprobación de mejoras IA.",
-    color: "#dc2626",
+    number: 1,
+    name: "Identificación (Cl@ve / Certificado)",
+    avgTime: "1m 20s",
+    baseConversion: 92,
+    baseAbandonment: 8,
+    note: "Flujo estable sin fricción destacable.",
   },
   {
-    id: "soporte",
-    label: "Soporte Técnico",
-    userName: "Laura Martín",
-    userTitle: "Atención al Cliente y Soporte N1",
-    initials: "LM",
-    quadrant: "Menos poder · Menos interés estratégico",
-    powerInterest: "Primera línea de contacto con dudas ciudadanas",
-    contributes: "Experiencia práctica diaria y conocimiento tácito de fricciones recurrentes.",
-    receives: "Reducción drástica de tickets repetitivos (-24%) y menores colas de espera.",
-    focusSummary: "Priorizando carga de tickets, tiempos de espera y registro de incidencias tácitas (Socialización SECI).",
-    color: "#059669",
+    number: 2,
+    name: "Datos Fiscales (IBAN y CNAE)",
+    avgTime: "4m 50s",
+    baseConversion: 78,
+    baseAbandonment: 22,
+    note: "Fricción alta en formato IBAN (42%) y código CNAE (27%).",
   },
   {
-    id: "gerencia",
-    label: "Gerencia / Dirección",
-    userName: "Carlos Muñoz",
-    userTitle: "Director de Transformación",
-    initials: "CM",
-    quadrant: "Más poder · Más interés",
-    powerInterest: "Impulsor económico y patrocinador del proyecto",
-    contributes: "Interés económico, recursos presupuestarios y datos del ecosistema.",
-    receives: "Reducción de costes operativos (-66%), ROI positivo y métricas de eficiencia global.",
-    focusSummary: "Priorizando retorno operativo (coste/expediente), tiempos de espera y alineación con Agenda España Digital.",
-    color: "#0891b2",
+    number: 3,
+    name: "Adjuntar Documentación",
+    avgTime: "6m 15s",
+    baseConversion: 62,
+    baseAbandonment: 38,
+    note: "Cuello de botella principal: 46% omite Escritura o sube fotos JPG.",
   },
   {
-    id: "tecnico",
-    label: "Personal Técnico (TI)",
-    userName: "Javier Morales",
-    userTitle: "Arquitecto GovTech / DevOps",
-    initials: "JM",
-    quadrant: "Más poder · Más interés",
-    powerInterest: "Implementador técnico de las reglas y validaciones",
-    contributes: "Capacidad técnica de desarrollo, mantenimiento y analítica de telemetría.",
-    receives: "Detección precisa de puntos de fallo frontend/UX y especificaciones accionables.",
-    focusSummary: "Priorizando despliegue en Staging/Producción, reglas de validación IBAN/PDF y rendimiento.",
-    color: "#2563eb",
-  },
-  {
-    id: "dpo",
-    label: "DPO y Organismos Reguladores",
-    userName: "Laura Romero",
-    userTitle: "Delegada de Protección de Datos",
-    initials: "LR",
-    quadrant: "Más poder · Menos interés",
-    powerInterest: "Garante de cumplimiento legal, ENS y RGPD",
-    contributes: "Conocimiento normativo sobre conservación, anonimización y seguridad.",
-    receives: "Trazabilidad completa de eventos, auditoría continua y cumplimiento WCAG 2.2 AA.",
-    focusSummary: "Priorizando registro de auditoría inmutable, cumplimiento ENS Medio, RGPD y accesibilidad.",
-    color: "#ea580c",
-  },
-  {
-    id: "ciudadano",
-    label: "Usuario Final / AJE Canarias",
-    userName: "Pyme Solicitante",
-    userTitle: "Asociación de Jóvenes Empresarios",
-    initials: "AJ",
-    quadrant: "Menos poder · Más interés",
-    powerInterest: "Beneficiario directo de la simplificación administrativa",
-    contributes: "Datos reales de interacción y feedback directo sobre lo que no funciona.",
-    receives: "Formularios claros, validaciones comprensibles y reducción de abandonos al primer intento.",
-    focusSummary: "Priorizando la experiencia ciudadana en el simulador Antes vs. Después y las guías paso a paso.",
-    color: "#991b1b",
+    number: 4,
+    name: "Firma y Envío",
+    avgTime: "1m 10s",
+    baseConversion: 93,
+    baseAbandonment: 7,
+    note: "Alta conversión final entre quienes superan el Paso 3.",
   },
 ];
 
-export const proceduresList: ProcedureOption[] = [
-  {
-    id: "pymes-digital",
-    name: "Solicitud de Subvención Digitalización Pymes",
-    siaCode: "2849102",
-    activeFiles: "14.820",
-    deadline: "Abierta hasta 30 nov 2025",
-    status: "Convocatoria 2025",
-    initiated: "18.240",
-    submitted: "12.476",
-    abandoned: "5.764",
-    avgTime: "13m 35s",
-    firstAttemptSuccess: 68.4,
-    supportTicketsWeek: 312,
-    supportWaitMin: 4.2,
-    costPerFile: 4.8,
-    funnel: [
-      {
-        number: 1,
-        name: "Paso 1: Identificación",
-        time: "1m 20s",
-        badge: { text: "Óptimo", type: "optimal" },
-        started: "18.240",
-        completed: "16.780",
-        conversion: 92,
-        abandonmentRate: 8,
-        icon: "shield",
-        diagnostic:
-          "Autenticación Cl@ve y Certificado Digital funcionando con normalidad. Tasa de éxito 92%.",
-      },
-      {
-        number: 2,
-        name: "Paso 2: Datos Fiscales",
-        time: "4m 50s",
-        badge: { text: "ALERTA", type: "alert" },
-        started: "16.780",
-        completed: "13.088",
-        conversion: 78,
-        abandonmentRate: 22,
-        icon: "creditCard",
-        diagnostic:
-          "Tiempo medio elevado (+2m 10s vs benchmark). Fricción crítica en formato IBAN (42% error) y selección de CNAE (27%).",
-      },
-      {
-        number: 3,
-        name: "Paso 3: Adjuntar Documentación",
-        time: "6m 15s",
-        badge: { text: "CRÍTICO: 38% abandono", type: "critical" },
-        started: "13.088",
-        completed: "8.114",
-        conversion: 48,
-        abandonmentRate: 38,
-        icon: "paperclip",
-        diagnostic:
-          "Cuello de botella principal. El 46% omite la Escritura de Constitución o sube imágenes no admitidas en vez de PDF.",
-      },
-      {
-        number: 4,
-        name: "Paso 4: Firma y Envío",
-        time: "1m 10s",
-        badge: { text: "68,4% Éxito final", type: "optimal" },
-        started: "8.114",
-        completed: "7.854",
-        conversion: 96,
-        abandonmentRate: 4,
-        icon: "checkCircle",
-        diagnostic:
-          "AutoFirma y firma en la nube integradas sin incidencias. Proceso de registro oficial completado.",
-      },
-    ],
-  },
-  {
-    id: "actividad-comercial",
-    name: "Licencia de Actividad Comercial y Apertura",
-    siaCode: "1928341",
-    activeFiles: "8.410",
-    deadline: "Trámite continuo",
-    status: "Activo permanente",
-    initiated: "9.850",
-    submitted: "7.683",
-    abandoned: "2.167",
-    avgTime: "10m 50s",
-    firstAttemptSuccess: 78.0,
-    supportTicketsWeek: 145,
-    supportWaitMin: 2.8,
-    costPerFile: 3.9,
-    funnel: [
-      {
-        number: 1,
-        name: "Paso 1: Titular y Local",
-        time: "1m 10s",
-        badge: { text: "Óptimo", type: "optimal" },
-        started: "9.850",
-        completed: "9.357",
-        conversion: 95,
-        abandonmentRate: 5,
-        icon: "building",
-        diagnostic: "Referencia catastral autocompletada mediante API del Catastro sin fricciones.",
-      },
-      {
-        number: 2,
-        name: "Paso 2: Epígrafe IAE / CNAE",
-        time: "3m 10s",
-        badge: { text: "Estable", type: "optimal" },
-        started: "9.357",
-        completed: "8.327",
-        conversion: 89,
-        abandonmentRate: 11,
-        icon: "form",
-        diagnostic: "Buscador asistido por palabra clave activo; reducción del 19% en llamadas de consulta.",
-      },
-      {
-        number: 3,
-        name: "Paso 3: Memoria Técnica Visada",
-        time: "5m 10s",
-        badge: { text: "ALERTA", type: "alert" },
-        started: "8.327",
-        completed: "7.820",
-        conversion: 84,
-        abandonmentRate: 16,
-        icon: "paperclip",
-        diagnostic: "Algunos planos superan el límite anterior de 10MB; en estudio ampliación a 25MB.",
-      },
-      {
-        number: 4,
-        name: "Paso 4: Tasas y Registro",
-        time: "1m 20s",
-        badge: { text: "78,0% Éxito final", type: "optimal" },
-        started: "7.820",
-        completed: "7.683",
-        conversion: 98,
-        abandonmentRate: 2,
-        icon: "checkCircle",
-        diagnostic: "Pasarela Redsys/Bizum institucional con confirmación inmediata.",
-      },
-    ],
-  },
-  {
-    id: "alquiler-joven",
-    name: "Ayuda al Alquiler de Vivienda Joven",
-    siaCode: "3019284",
-    activeFiles: "19.340",
-    deadline: "Plazo cerrado en evaluación",
-    status: "Fase resolución",
-    initiated: "24.100",
-    submitted: "15.424",
-    abandoned: "8.676",
-    avgTime: "16m 20s",
-    firstAttemptSuccess: 64.0,
-    supportTicketsWeek: 490,
-    supportWaitMin: 7.5,
-    costPerFile: 6.1,
-    funnel: [
-      {
-        number: 1,
-        name: "Paso 1: Identificación Joven",
-        time: "1m 45s",
-        badge: { text: "Óptimo", type: "optimal" },
-        started: "24.100",
-        completed: "21.931",
-        conversion: 91,
-        abandonmentRate: 9,
-        icon: "shield",
-        diagnostic: "Acceso mayoritario por Cl@ve PIN desde dispositivos móviles (68%).",
-      },
-      {
-        number: 2,
-        name: "Paso 2: Datos Arrendamiento e IBAN",
-        time: "5m 20s",
-        badge: { text: "ALERTA", type: "alert" },
-        started: "21.931",
-        completed: "18.202",
-        conversion: 83,
-        abandonmentRate: 17,
-        icon: "creditCard",
-        diagnostic: "Confusión entre cuenta del arrendador y del solicitante.",
-      },
-      {
-        number: 3,
-        name: "Paso 3: Contrato y Recibos Banco",
-        time: "7m 40s",
-        badge: { text: "CRÍTICO: 32% abandono", type: "critical" },
-        started: "18.202",
-        completed: "15.880",
-        conversion: 68,
-        abandonmentRate: 32,
-        icon: "paperclip",
-        diagnostic: "Dificultad para unificar los 6 últimos recibos bancarios en un único PDF.",
-      },
-      {
-        number: 4,
-        name: "Paso 4: Firma Electrónica",
-        time: "1m 35s",
-        badge: { text: "64,0% Éxito final", type: "optimal" },
-        started: "15.880",
-        completed: "15.424",
-        conversion: 97,
-        abandonmentRate: 3,
-        icon: "checkCircle",
-        diagnostic: "Firma completada correctamente tras verificación biométrica.",
-      },
-    ],
-  },
-  {
-    id: "proveedores",
-    name: "Alta en el Registro Oficial de Proveedores",
-    siaCode: "1029384",
-    activeFiles: "5.120",
-    deadline: "Trámite continuo",
-    status: "Activo permanente",
-    initiated: "6.400",
-    submitted: "4.544",
-    abandoned: "1.856",
-    avgTime: "12m 15s",
-    firstAttemptSuccess: 71.0,
-    supportTicketsWeek: 118,
-    supportWaitMin: 3.1,
-    costPerFile: 4.5,
-    funnel: [
-      {
-        number: 1,
-        name: "Paso 1: Certificado Representante",
-        time: "1m 50s",
-        badge: { text: "Óptimo", type: "optimal" },
-        started: "6.400",
-        completed: "5.888",
-        conversion: 92,
-        abandonmentRate: 8,
-        icon: "shield",
-        diagnostic: "Validación automática contra FNMT sin incidencias.",
-      },
-      {
-        number: 2,
-        name: "Paso 2: Solvencia y Cuenta IBAN",
-        time: "4m 05s",
-        badge: { text: "Estable", type: "optimal" },
-        started: "5.888",
-        completed: "5.122",
-        conversion: 87,
-        abandonmentRate: 13,
-        icon: "creditCard",
-        diagnostic: "Pre-validación IBAN redujo errores de formato del 34% al 4%.",
-      },
-      {
-        number: 3,
-        name: "Paso 3: Certificados AEAT y SS",
-        time: "4m 55s",
-        badge: { text: "ALERTA", type: "alert" },
-        started: "5.122",
-        completed: "4.661",
-        conversion: 81,
-        abandonmentRate: 19,
-        icon: "paperclip",
-        diagnostic: "Pendiente de interoperabilidad automática vía PID para evitar adjuntar PDF.",
-      },
-      {
-        number: 4,
-        name: "Paso 4: Inscripción y Código",
-        time: "1m 25s",
-        badge: { text: "71,0% Éxito final", type: "optimal" },
-        started: "4.661",
-        completed: "4.544",
-        conversion: 97,
-        abandonmentRate: 3,
-        icon: "checkCircle",
-        diagnostic: "Alta emitida en menos de 2 minutos tras firma.",
-      },
-    ],
-  },
-];
-
-export const procedureBreakdownTable = [
-  {
-    name: "Licencia de actividad",
-    volume: "4.820",
-    success: 78,
-    time: "11 min",
-    trend: 8.2,
-    status: "Óptimo",
-  },
-  {
-    name: "Ayuda al alquiler",
-    volume: "3.195",
-    success: 64,
-    time: "18 min",
-    trend: 3.1,
-    status: "Atención",
-  },
-  {
-    name: "Alta de proveedor",
-    volume: "2.760",
-    success: 71,
-    time: "14 min",
-    trend: 5.7,
-    status: "Estable",
-  },
-  {
-    name: "Solicitud de subvención Pymes",
-    volume: "2.140",
-    success: 52,
-    time: "27 min",
-    trend: -4.8,
-    status: "Crítico",
-  },
-  {
-    name: "Registro de documentación",
-    volume: "1.895",
-    success: 83,
-    time: "8 min",
-    trend: 11.4,
-    status: "Óptimo",
-  },
-];
-
-export const criticalFieldsData: CriticalField[] = [
-  {
-    name: "IBAN / Certificado Bancario",
-    type: "field",
-    step: "Paso 2: Datos Fiscales",
-    stepNum: 2,
-    validationError: 42,
-    omittedDoc: 29,
-    status: "Crítico",
-    solutionLinked: "Sugerencia IA #2 (Autocompletar IBAN y aviso de vigencia <90 días)",
-    detail:
-      "Los solicitantes introducen números de cuenta con espacios irregulares o confunden titularidad con apoderamiento. El 29% olvida adjuntar el certificado de titularidad emitido en menos de 90 días.",
-  },
-  {
-    name: "CNAE Actividad",
-    type: "field",
-    step: "Paso 2: Datos Fiscales",
-    stepNum: 2,
-    validationError: 27,
-    omittedDoc: 8,
-    status: "Revisar",
-    solutionLinked: "Sugerencia IA #3 (Buscador asistido por actividad comercial AJE)",
-    detail:
-      "Desplegable de 4 dígitos genera dudas en empresas tecnológicas y servicios mixtos. El 27% introduce un código incompatible con las bases de la subvención.",
-  },
+export const CRITICAL_FIELDS: CriticalField[] = [
   {
     name: "Escritura de Constitución",
-    type: "document",
-    step: "Paso 3: Adjuntar Documentación",
-    stepNum: 3,
-    validationError: 15,
-    omittedDoc: 46,
+    step: "Paso 3 · Documentación",
+    validationErrorPct: 15,
+    omittedDocPct: 46,
     status: "Crítico",
-    solutionLinked: "Sugerencia IA #1 (Exención a autónomos, tooltip y pre-validador PDF)",
-    detail:
-      "Causa raíz del cuello de botella en Paso 3: el 46% de solicitantes no adjunta la escritura (autónomos bloqueados porque no tienen sociedad) o sube imágenes JPEG/PNG no admitidas en vez de PDF.",
+    improvementKeys: ["sug1"],
+  },
+  {
+    name: "IBAN / Certificado Bancario",
+    step: "Paso 2 · Datos Fiscales",
+    validationErrorPct: 42,
+    omittedDocPct: 29,
+    status: "Crítico",
+    improvementKeys: ["sug2", "cert"],
+  },
+  {
+    name: "Código CNAE Actividad",
+    step: "Paso 2 · Datos Fiscales",
+    validationErrorPct: 27,
+    omittedDocPct: 8,
+    status: "Revisar",
+    improvementKeys: ["cnae"],
   },
 ];
 
-export const seciStages: Array<{
-  phase: SeciPhase;
-  conversion: string;
-  title: string;
-  actor: string;
-  description: string;
-  badgeColor: string;
-}> = [
+export const RECOMMENDATIONS: Recommendation[] = [
+  {
+    key: "sug1",
+    title: "Eximir Escritura a autónomos y pre-validar PDF",
+    step: "Paso 3",
+    impactLabel: "+16,2 pts éxito · −22% abandono",
+    description:
+      "Oculta la Escritura societaria a personas físicas/autónomos y valida formato PDF antes de enviar.",
+    seciOrigin: "Hilo Soporte + Gestor (Exteriorización)",
+  },
+  {
+    key: "sug2",
+    title: "Autocompletar y validar IBAN en tiempo real",
+    step: "Paso 2",
+    impactLabel: "+10,4 pts éxito · −85 tickets/sem",
+    description:
+      "Formatea espacios cada 4 caracteres y comprueba el dígito de control antes de cambiar de paso.",
+    seciOrigin: "Telemetría Paso 2",
+  },
+  {
+    key: "cnae",
+    title: "Buscador asistido de CNAE por palabra clave",
+    step: "Paso 2",
+    impactLabel: "+7,8 pts éxito · −70 tickets/sem",
+    description:
+      "Sustituye códigos crípticos por búsqueda sencilla (ej. 'tienda online' → 4791) consensuada por Soporte.",
+    seciOrigin: "Tabla equivalencias (Combinación)",
+  },
+  {
+    key: "cert",
+    title: "Aviso proactivo de Certificado Bancario (<90 días)",
+    step: "Paso 2",
+    impactLabel: "+7,0 pts éxito · −80 tickets/sem",
+    description:
+      "Muestra los requisitos de vigencia y sello bancario detectados tras 48 consultas semanales en soporte.",
+    seciOrigin: "Incidencia Soporte N1 (Combinación)",
+  },
+];
+
+export const SECI_PHASES: Array<{ phase: SeciPhase; flow: string; summary: string }> = [
   {
     phase: "Socialización",
-    conversion: "Tácito → Tácito",
-    title: "Captura en Atención al Cliente",
-    actor: "Soporte Técnico + Ciudadanos",
-    description: "El equipo de soporte detecta dudas recurrentes en llamadas (ej. 48 consultas sobre certificado bancario) y comparte experiencias.",
-    badgeColor: "#059669",
+    flow: "Tácito → Tácito",
+    summary: "Soporte recoge dudas repetidas en llamadas y chat ciudadano.",
   },
   {
     phase: "Exteriorización",
-    conversion: "Tácito → Explícito",
-    title: "Registro en Comunidad de Práctica",
-    actor: "Soporte + Gestores de Trámites",
-    description: "Las fricciones se documentan en hilos estructurados y mesas de debate para proponer reglas y textos claros.",
-    badgeColor: "#2563eb",
+    flow: "Tácito → Explícito",
+    summary: "Las incidencias se documentan en hilos internos con propuesta clara.",
   },
   {
     phase: "Combinación",
-    conversion: "Explícito → Explícito",
-    title: "Motor IA + Guía Oficial",
-    actor: "TramitaGC IA + Personal Técnico",
-    description: "Se cruzan los datos del embudo con los hilos validados para crear validadores frontend, tablas CNAE y guías oficiales.",
-    badgeColor: "#7c3aed",
+    flow: "Explícito → Explícito",
+    summary: "Se cruza telemetría del embudo con guías oficiales y validadores.",
   },
   {
     phase: "Interiorización",
-    conversion: "Explícito → Tácito",
-    title: "Adopción en Trámite Real",
-    actor: "Usuarios Finales + Organización",
-    description: "Las mejoras se despliegan en el formulario ciudadano (Antes→Después), elevando el éxito al primer intento sin soporte.",
-    badgeColor: "#d97706",
+    flow: "Explícito → Tácito",
+    summary: "Las mejoras se despliegan en el formulario y el usuario finaliza sin ayuda.",
   },
 ];
 
-export const initialThreads: CommunityThread[] = [
+export const INITIAL_POSTS: CommunityPost[] = [
   {
-    id: "thread-1",
-    title: "Duda recurrente en soporte sobre Certificado Bancario caducado",
-    authorName: "Laura M.",
-    authorRole: "Soporte Técnico",
-    seciPhase: "Interiorización",
-    repliesCount: 8,
-    timeAgo: "Hace 2 días",
-    status: "Validado e incorporado a la guía del trámite",
-    description:
-      "Hemos detectado 48 llamadas en la última semana donde ciudadanos adjuntan justificantes de cuenta antiguos o recibos domiciliados. Al no ser un certificado oficial con antigüedad menor a 3 meses, el trámite queda en suspenso o es rechazado.",
-    knowledgeSnippet:
-      "Conocimiento explícito incorporado a la Guía Ciudadana (26/05/2025): 'El certificado debe haber sido emitido en los últimos 90 días, contener el IBAN completo, nombre del titular y sello o firma electrónica del banco.' Reducción estimada de llamadas de soporte: -80%.",
-    tags: ["Certificado Bancario", "Paso 2", "Guía Ciudadana", "Soporte N1"],
-    replies: [
-      {
-        author: "Laura M.",
-        role: "Soporte Técnico",
-        text: "Inicié este hilo porque el 35% de los tickets del lunes eran sobre el mismo rechazo bancario.",
-        time: "Hace 2 días, 09:15",
-      },
-      {
-        author: "Carlos R.",
-        role: "Gestor de Trámites",
-        text: "Totalmente de acuerdo. En la instrucción del formulario figuraba de forma ambigua. Hemos consensuado la redacción exacta con Asesoría.",
-        time: "Hace 2 días, 11:30",
-      },
-      {
-        author: "María Sánchez",
-        role: "Gestora de Procedimientos",
-        text: "Validado formalmente. Se ha actualizado la guía del trámite y el tooltip de validación en el Paso 2.",
-        time: "Hace 1 día, 16:40",
-      },
-    ],
-  },
-  {
-    id: "thread-2",
-    title: "Aclaración de poderes notariales en Escritura de Constitución (Paso 3)",
-    authorName: "Carlos R.",
-    authorRole: "Gestor de Trámites",
+    id: "post-1",
+    title: "Autónomos bloqueados al exigir Escritura de Constitución",
+    author: "Carlos R.",
+    role: "Gestor de Trámites",
     seciPhase: "Exteriorización",
-    repliesCount: 5,
-    timeAgo: "Ayer",
-    status: "En debate con IA",
+    status: "En análisis",
     description:
-      "En respuesta a la Sugerencia IA #1: los solicitantes suelen subir sólo la primera página de la escritura o intentan adjuntar fotos JPG. Además, los autónomos se bloquean porque no disponen de escritura societaria.",
-    knowledgeSnippet:
-      "Propuesta en curso: Ocultar o eximir campo si es Autónomo en Paso 1 y activar pre-validador PDF multipágina (mín. 4 págs) con conversor integrado.",
-    tags: ["Paso 3", "Escrituras", "Sugerencia IA", "Validación PDF"],
-    replies: [
-      {
-        author: "Carlos R.",
-        role: "Gestor de Trámites",
-        text: "El 46% de omisión se debe a que no tienen claro si la escritura societaria es obligatoria para autónomos.",
-        time: "Ayer, 10:20",
-      },
-      {
-        author: "Laura M.",
-        role: "Soporte Técnico",
-        text: "Podemos marcar este requisito como exento automáticamente si en el Paso 1 marcaron 'Persona Física / Autónomo'.",
-        time: "Ayer, 12:05",
-      },
-    ],
+      "El 46% de abandonos en Paso 3 ocurre porque los autónomos no tienen escritura societaria o suben fotos JPG.",
+    linkedImprovement: "sug1",
   },
   {
-    id: "thread-3",
-    title: "Tabla de equivalencias para CNAEs ambiguos en comercio electrónico",
-    authorName: "Elena P.",
-    authorRole: "Soporte Técnico",
+    id: "post-2",
+    title: "48 llamadas semanales por Certificado Bancario >90 días",
+    author: "Laura M.",
+    role: "Soporte Técnico",
     seciPhase: "Combinación",
-    repliesCount: 11,
-    timeAgo: "Hace 4 días",
-    status: "Validado e incorporado a la guía del trámite",
+    status: "Validado en guía oficial",
     description:
-      "Empresas de software y venta online (socias de AJE Canarias) dudaban entre CNAE 4791 y 6201. Se creó un cuadro de equivalencia que el equipo de soporte consulta durante las llamadas y que alimenta al buscador asistido.",
-    knowledgeSnippet:
-      "Documento de consulta rápida subido a la base de conocimiento interna con 12 ejemplos de reclasificación inmediata integrados en el buscador del Paso 2.",
-    tags: ["CNAE", "Paso 2", "Base de Conocimiento", "AJE Canarias"],
-    replies: [
-      {
-        author: "Elena P.",
-        role: "Soporte Técnico",
-        text: "Comparto la tabla de equivalencias consensuada.",
-        time: "Hace 4 días",
-      },
-    ],
+      "Se redactó una instrucción clara: antigüedad máxima 90 días, IBAN visible y sello o firma electrónica bancaria.",
+    linkedImprovement: "cert",
+  },
+  {
+    id: "post-3",
+    title: "Equivalencias CNAE para comercio online y software",
+    author: "Elena P.",
+    role: "Soporte Técnico",
+    seciPhase: "Combinación",
+    status: "Validado en guía oficial",
+    description:
+      "Pymes digitales dudaban entre 4791 y 6201; se integró la tabla de equivalencias de Soporte al formulario.",
+    linkedImprovement: "cnae",
   },
 ];
 
-export const recommendationsCatalog: RecommendationItem[] = [
-  {
-    id: "rec-1",
-    title: "Simplificar instrucción en Paso 3: El 46% omite la Escritura de Constitución",
-    impact: "Alto impacto",
-    confidence: 94,
-    description:
-      "Eximir automáticamente a personas físicas/autónomos, añadir tooltip explicativo y activar pre-validación de formato PDF multipágina antes del envío.",
-    procedureStep: "Solicitud de Subvención Digitalización Pymes · Paso 3",
-    expectedResult: "+14,2% conversión estimada",
-    seciLink: "Vinculada a Hilo #2 (Exteriorización)",
-    simulatesImprovement: "sug1",
-  },
-  {
-    id: "rec-2",
-    title: "Autocompletar formato IBAN en Paso 2 para evitar el 42% de errores de validación",
-    impact: "Impacto medio",
-    confidence: 91,
-    description:
-      "Formatear automáticamente espacios cada 4 dígitos y pre-validar el dígito de control bancario (Módulo 97) en tiempo real para erradicar errores sintácticos.",
-    procedureStep: "Solicitud de Subvención Digitalización Pymes · Paso 2",
-    expectedResult: "−42% errores de validación",
-    seciLink: "Vinculada a telemetría Paso 2",
-    simulatesImprovement: "sug2",
-  },
-  {
-    id: "rec-3",
-    title: "Desplegable asistido por palabra clave para selección de código CNAE",
-    impact: "Impacto medio",
-    confidence: 88,
-    description:
-      "El 27% de los solicitantes comete error al elegir su código de actividad empresarial. Integrar el cuadro de equivalencias validado por Soporte y AJE Canarias.",
-    procedureStep: "Solicitud de Subvención Digitalización Pymes · Paso 2",
-    expectedResult: "−2m en tiempo de llenado",
-    seciLink: "Vinculada a Hilo #3 (Combinación)",
-    simulatesImprovement: "cnae",
-  },
-  {
-    id: "rec-4",
-    title: "Aviso proactivo sobre caducidad de Certificado Bancario (<90 días)",
-    impact: "Alto impacto",
-    confidence: 85,
-    description:
-      "Consensuado con Soporte Técnico tras 48 llamadas recurrentes: mostrar advertencia explícita de vigencia de 90 días y requisitos del sello electrónico.",
-    procedureStep: "Solicitud de Subvención Digitalización Pymes · Paso 2",
-    expectedResult: "−80% consultas en soporte",
-    seciLink: "Vinculada a Hilo #1 (Interiorización)",
-    simulatesImprovement: "cert",
-  },
-  {
-    id: "rec-5",
-    title: "Unificar ayuda contextual y previsualización de firma AutoFirma",
-    impact: "Impacto bajo",
-    confidence: 82,
-    description:
-      "Consolidar la compatibilidad con navegadores modernos y comprobar certificados de representante legal antes de invocar el cliente de firma.",
-    procedureStep: "Paso 4: Firma y Envío",
-    expectedResult: "Cumplimiento WCAG 2.2 AA",
-    seciLink: "Auditoría técnica TI",
-  },
+export const CNAE_EXAMPLES = [
+  { code: "4791", label: "Comercio electrónico / tienda online" },
+  { code: "6201", label: "Programación y desarrollo de software" },
+  { code: "6202", label: "Consultoría tecnológica y digitalización" },
+  { code: "5610", label: "Hostelería y restauración" },
 ];
 
-export const environmentBenchmarks = [
-  {
-    source: "ONTSI (Observatorio Nacional de Tecnología y Sociedad)",
-    metric: "78,5%",
-    label: "Población que interactúa con servicios digitales",
-    gapNote: "Sin embargo, la brecha de uso hace que solo el 39% complete trámites complejos al 1er intento sin GC. TramitaGC eleva esta cifra al 68,4% (+29,4 pts).",
-    tone: "blue" as const,
-  },
-  {
-    source: "AJE Canarias (Jóvenes Empresarios)",
-    metric: "−64%",
-    label: "Reducción de fricción en pymes canarias",
-    gapNote: "Validado en pymes y autónomos de Canarias: los errores por códigos CNAE y escrituras societarias eran el 1er motivo de desistimiento.",
-    tone: "green" as const,
-  },
-  {
-    source: "Agenda España Digital 2026",
-    metric: "94 / 100",
-    label: "Índice de alineación con modernización pública",
-    gapNote: "Cumplimiento directo del Eje de Digitalización de las AAPP y principio de 'solo una vez' y diseño centrado en el ciudadano.",
-    tone: "purple" as const,
-  },
-];
+export function computeImpact(applied: AppliedImprovements) {
+  const activeCount = Object.values(applied).filter(Boolean).length;
+  const firstAttemptSuccess = Number(
+    (
+      41.2 +
+      (applied.sug1 ? 16.2 : 0) +
+      (applied.sug2 ? 10.4 : 0) +
+      (applied.cnae ? 7.8 : 0) +
+      (applied.cert ? 7.0 : 0)
+    ).toFixed(1),
+  );
+  const step2Abandon = Math.max(8, 22 - (applied.sug2 ? 8 : 0) - (applied.cnae ? 6 : 0));
+  const step3Abandon = Math.max(9, 38 - (applied.sug1 ? 22 : 0) - (applied.cert ? 7 : 0));
+  const supportTicketsWeek = Math.max(
+    115,
+    480 -
+      (applied.sug1 ? 130 : 0) -
+      (applied.sug2 ? 85 : 0) -
+      (applied.cnae ? 70 : 0) -
+      (applied.cert ? 80 : 0),
+  );
+  const supportWaitMin = Number(
+    Math.max(
+      3,
+      18 -
+        (applied.sug1 ? 5.0 : 0) -
+        (applied.sug2 ? 3.5 : 0) -
+        (applied.cnae ? 3.0 : 0) -
+        (applied.cert ? 3.5 : 0),
+    ).toFixed(1),
+  );
+  const costPerFile = Number(
+    Math.max(
+      4.8,
+      14.2 -
+        (applied.sug1 ? 3.6 : 0) -
+        (applied.sug2 ? 2.4 : 0) -
+        (applied.cnae ? 1.8 : 0) -
+        (applied.cert ? 1.6 : 0),
+    ).toFixed(2),
+  );
+  const annualSavingsEur = Math.round((14.2 - costPerFile) * PROCEDURE.activeFiles);
 
-export const intellectualCapitalData = {
-  humano: [
-    "Know-how de los gestores de procedimientos sobre bases reguladoras.",
-    "Habilidades de resolución del personal de Soporte Técnico ante dudas ciudadanas.",
-    "Capacidad de aprendizaje continuo e interiorización de mejoras por el equipo.",
-  ],
-  estructural: [
-    "Plataforma inteligente TramitaGC (analítica de embudos + motor de IA).",
-    "Conocimiento explicitado: registro de abandonos, errores por campo y tiempos.",
-    "Procedimientos electrónicos optimizados y guías oficiales en constante evolución.",
-  ],
-  relacional: [
-    "Relación transparente con ciudadanos, solicitantes y asociaciones (AJE Canarias).",
-    "Alineación institucional con Agenda España Digital y referencias del ONTSI.",
-    "Interoperabilidad y confianza con organismos reguladores y DPO.",
-  ],
-  pasivos: [
-    {
-      title: "Brecha de uso digital",
-      detail: "Diferencia entre tener acceso web y lograr finalizar el trámite sin asistencia.",
-      mitigation: "Mitigado con tooltips contextuales y pre-validaciones en vivo.",
-    },
-    {
-      title: "Complejidad y usabilidad",
-      detail: "Instrucciones técnicas ambiguas (IBAN sin formato, CNAE crudo, PDFs rechazados).",
-      mitigation: "Mitigado con el Simulador Antes vs. Después y el Motor IA.",
-    },
-    {
-      title: "Saturación operativa",
-      detail: "Colapso de llamadas y correos en soporte que elevan los tiempos de espera.",
-      mitigation: "Mitigado reduciendo tickets un 24% y espera de 18 min a 4 min.",
-    },
-  ],
-};
+  return {
+    activeCount,
+    firstAttemptSuccess,
+    step2Abandon,
+    step2Conversion: 100 - step2Abandon,
+    step3Abandon,
+    step3Conversion: 100 - step3Abandon,
+    supportTicketsWeek,
+    supportWaitMin,
+    costPerFile,
+    annualSavingsEur,
+  };
+}

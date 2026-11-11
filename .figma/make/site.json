@@ -1,4 +1,6 @@
 {
+  "title": "TramitaGC — Analítica de Procesos y Gestión del Conocimiento (GCO - ULL)",
+  "language": "es",
   "description": "Analiza trámites, embudos y métricas de gestión para que administraciones públicas y empresas reduzcan abandonos, mejoren procesos y optimicen la atención.",
   "robots": {
     "index": false
