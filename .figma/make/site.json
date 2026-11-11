@@ -1,0 +1,10 @@
+{
+  "description": "Analiza trámites, embudos y métricas de gestión para que administraciones públicas y empresas reduzcan abandonos, mejoren procesos y optimicen la atención.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
