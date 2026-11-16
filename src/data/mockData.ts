@@ -1,6 +1,12 @@
 export type ImprovementKey = "sug1" | "sug2" | "cnae" | "cert";
 export type AppliedImprovements = Record<ImprovementKey, boolean>;
-export type SeciPhase = "Socialización" | "Exteriorización" | "Combinación" | "Interiorización";
+export type CommunityRole = "Soporte Técnico" | "Gestor de Trámites" | "Personal Técnico";
+
+export interface ThreadComment {
+  author: string;
+  role: CommunityRole;
+  text: string;
+}
 
 export interface FunnelStep {
   number: number;
@@ -33,11 +39,11 @@ export interface CommunityPost {
   id: string;
   title: string;
   author: string;
-  role: "Soporte Técnico" | "Gestor de Trámites";
-  seciPhase: SeciPhase;
-  status: "En análisis" | "Validado en guía oficial";
+  role: CommunityRole;
+  status: "En debate" | "Aprobado e implantado";
   description: string;
   linkedImprovement?: ImprovementKey;
+  comments: ThreadComment[];
 }
 
 export const PROCEDURE = {
@@ -50,7 +56,7 @@ export const PROCEDURE = {
 export const FUNNEL_STEPS: FunnelStep[] = [
   {
     number: 1,
-    name: "Identificación (Cl@ve / Certificado)",
+    name: "Identificación (Cl@ve)",
     avgTime: "1m 20s",
     baseConversion: 92,
     baseAbandonment: 8,
@@ -148,62 +154,77 @@ export const RECOMMENDATIONS: Recommendation[] = [
   },
 ];
 
-export const SECI_PHASES: Array<{ phase: SeciPhase; flow: string; summary: string }> = [
-  {
-    phase: "Socialización",
-    flow: "Tácito → Tácito",
-    summary: "Soporte recoge dudas repetidas en llamadas y chat ciudadano.",
-  },
-  {
-    phase: "Exteriorización",
-    flow: "Tácito → Explícito",
-    summary: "Las incidencias se documentan en hilos internos con propuesta clara.",
-  },
-  {
-    phase: "Combinación",
-    flow: "Explícito → Explícito",
-    summary: "Se cruza telemetría del embudo con guías oficiales y validadores.",
-  },
-  {
-    phase: "Interiorización",
-    flow: "Explícito → Tácito",
-    summary: "Las mejoras se despliegan en el formulario y el usuario finaliza sin ayuda.",
-  },
-];
-
 export const INITIAL_POSTS: CommunityPost[] = [
   {
     id: "post-1",
     title: "Autónomos bloqueados al exigir Escritura de Constitución",
     author: "Carlos R.",
     role: "Gestor de Trámites",
-    seciPhase: "Exteriorización",
-    status: "En análisis",
+    status: "En debate",
     description:
-      "El 46% de abandonos en Paso 3 ocurre porque los autónomos no tienen escritura societaria o suben fotos JPG.",
+      "El 46% de abandonos en el Paso 3 ocurre porque los solicitantes autónomos no disponen de escritura societaria o suben capturas de móvil en lugar de PDF.",
     linkedImprovement: "sug1",
+    comments: [
+      {
+        author: "Laura M.",
+        role: "Soporte Técnico",
+        text: "En soporte atendemos unas 30 llamadas diarias por esto. Los autónomos se quedan bloqueados porque el campo está marcado como obligatorio.",
+      },
+      {
+        author: "Carlos R.",
+        role: "Gestor de Trámites",
+        text: "Propongo que si el usuario selecciona 'Autónomo' en el primer paso, la escritura quede exenta automáticamente y solo se exija a sociedades.",
+      },
+      {
+        author: "Javier M.",
+        role: "Personal Técnico",
+        text: "Podemos aplicar la regla condicional en el formulario y añadir un pre-validador para rechazar imágenes sueltas que no sean PDF.",
+      },
+    ],
   },
   {
     id: "post-2",
-    title: "48 llamadas semanales por Certificado Bancario >90 días",
+    title: "48 llamadas semanales por Certificado Bancario emitido hace más de 90 días",
     author: "Laura M.",
     role: "Soporte Técnico",
-    seciPhase: "Combinación",
-    status: "Validado en guía oficial",
+    status: "En debate",
     description:
-      "Se redactó una instrucción clara: antigüedad máxima 90 días, IBAN visible y sello o firma electrónica bancaria.",
+      "Los ciudadanos adjuntan certificados antiguos o recibos domiciliados sin sello oficial, lo que provoca la paralización del expediente.",
     linkedImprovement: "cert",
+    comments: [
+      {
+        author: "Laura M.",
+        role: "Soporte Técnico",
+        text: "El 35% de los rechazos bancarios se deben a que el certificado tiene fecha de hace un año o no incluye el sello del banco.",
+      },
+      {
+        author: "Carlos R.",
+        role: "Gestor de Trámites",
+        text: "Aprobemos una advertencia destacada en el campo advirtiendo de la vigencia máxima de 90 días y los requisitos de firma bancaria.",
+      },
+    ],
   },
   {
     id: "post-3",
-    title: "Equivalencias CNAE para comercio online y software",
+    title: "Dudas con el código CNAE en empresas de comercio online y software",
     author: "Elena P.",
     role: "Soporte Técnico",
-    seciPhase: "Combinación",
-    status: "Validado en guía oficial",
+    status: "En debate",
     description:
-      "Pymes digitales dudaban entre 4791 y 6201; se integró la tabla de equivalencias de Soporte al formulario.",
+      "El desplegable numérico genera confusiones entre comercio digital (4791) y consultoría/software (6201); el 27% introduce un código incorrecto.",
     linkedImprovement: "cnae",
+    comments: [
+      {
+        author: "Elena P.",
+        role: "Soporte Técnico",
+        text: "Hemos preparado una tabla interna de correspondencias con las actividades más consultadas para ayudar a los solicitantes.",
+      },
+      {
+        author: "Javier M.",
+        role: "Personal Técnico",
+        text: "Podemos incorporar esa tabla directamente en un buscador por palabras clave para que el usuario escriba 'tienda' o 'programación' y le asigne el código.",
+      },
+    ],
   },
 ];
 

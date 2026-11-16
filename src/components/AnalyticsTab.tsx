@@ -16,9 +16,11 @@ export function AnalyticsTab({ applied, impact, onGoToRecommendations }: Analyti
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Panel de Control y Embudo</h2>
+          <h2 className="text-lg font-bold text-slate-900">
+            Panel de Control y Etapas del Trámite
+          </h2>
           <p className="text-xs text-slate-500">
-            Indicadores de proceso y organización para detectar cuellos de botella en el trámite
+            Indicadores de proceso y organización para detectar atascos en el trámite
           </p>
         </div>
         {impact.activeCount < 4 && (
@@ -47,7 +49,7 @@ export function AnalyticsTab({ applied, impact, onGoToRecommendations }: Analyti
             {impact.supportTicketsWeek} <span className="text-sm font-medium">tickets/sem</span>
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            Espera media: {impact.supportWaitMin.toFixed(1).replace(".", ",")} min (base 18,0)
+            Espera media: {impact.supportWaitMin.toFixed(1).replace(".", ",")} min
           </p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
@@ -72,10 +74,10 @@ export function AnalyticsTab({ applied, impact, onGoToRecommendations }: Analyti
         </div>
       </div>
 
-      {/* Embudo + Tabla de puntos críticos */}
+      {/* Etapas del trámite + Tabla de puntos críticos */}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-          <h3 className="text-sm font-bold text-slate-900">Embudo por etapas</h3>
+          <h3 className="text-sm font-bold text-slate-900">Etapas del trámite</h3>
           <p className="mb-4 text-xs text-slate-500">
             Conversión de usuarios en cada paso del formulario electrónico
           </p>
@@ -98,7 +100,7 @@ export function AnalyticsTab({ applied, impact, onGoToRecommendations }: Analyti
                     <span
                       className={`font-semibold ${isCritical ? "text-red-600" : "text-slate-600"}`}
                     >
-                      {conversion}% paso · {abandon}% abandono
+                      {conversion}% avanza · {abandon}% abandona
                     </span>
                   </div>
                   <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
@@ -113,9 +115,7 @@ export function AnalyticsTab({ applied, impact, onGoToRecommendations }: Analyti
                       style={{ width: `${conversion}%` }}
                     />
                   </div>
-                  <p className="text-[11px] text-slate-500">
-                    Tiempo medio: {step.avgTime} · {step.note}
-                  </p>
+                  <p className="text-[11px] text-slate-500">Tiempo medio: {step.avgTime}</p>
                 </div>
               );
             })}

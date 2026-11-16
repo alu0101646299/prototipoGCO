@@ -1,9 +1,7 @@
-# Contexto del Proyecto: TramitaGC (GCO - Universidad de La Laguna)
+# Contexto del Proyecto: TramitaGC
 
-## 1. Datos Académicos y Autores
-- **Asignatura:** Gestión del Conocimiento en las Organizaciones (Grado en Ingeniería Informática, ESIT - ULL, curso 2026-2027).
-- **Autores:** Eduardo Cruz González y Álvaro Martín Pérez-Dionis.
-- **Nombre de la herramienta:** TramitaGC — Sistema Inteligente de Analítica de Procesos y Gestión del Conocimiento para la Optimización de Trámites.
+## 1. Identificación del Sistema
+- **Nombre de la herramienta:** TramitaGC — Sistema Inteligente de Analítica de Procesos y Optimización de Trámites.
 
 ## 2. Objetivo y Justificación del Sistema
 - **Ámbito:** Administración Pública y empresas privadas con trámites electrónicos complejos.
@@ -25,9 +23,9 @@ El dashboard y los módulos deben mostrar métricas reales alineadas con el caso
 - **Indicadores Organizativos:** Porcentaje de usuarios que finalizan al primer intento sin asistencia, volumen de tickets/carga de soporte técnico, tiempos de espera en soporte y reducción de costes operativos.
 - **Indicadores de Entorno:** Alineación con Agenda España Digital y datos de referencia (ONTSI, AJE Canarias).
 
-## 5. Requisitos de la Rúbrica para el Prototipo
-Para alcanzar la máxima calificación (prototipo + tutorial + presentación comercial), la aplicación debe evidenciar:
-1. **Analítica de datos y diagnóstico:** Embudos por etapas, detección de cuellos de botella y tablas de errores/omisiones.
+## 5. Requisitos para el Prototipo
+La aplicación debe evidenciar:
+1. **Analítica de datos y diagnóstico:** Etapas del trámite, detección de cuellos de botella y tablas de errores/omisiones.
 2. **Motor de recomendaciones:** Sugerencias accionables generadas a partir de patrones de fallo.
-3. **Participación y aprendizaje colectivo:** Comunidad de práctica / wiki interna donde soporte y gestores comparten incidencias, debaten soluciones y convierten conocimiento tácito en explícito (Modelo SECI).
-4. **Comparativa de impacto (Antes vs. Después):** Demostración visual de cómo mejora un formulario ciudadano tras aplicar las recomendaciones de GC.
+3. **Participación y aprendizaje colectivo:** Comunidad donde soporte y gestores comparten incidencias y debaten soluciones para mejorar el trámite.
+4. **Comparativa de impacto (Antes vs. Después):** Demostración visual de cómo mejora un formulario ciudadano tras aplicar las recomendaciones.

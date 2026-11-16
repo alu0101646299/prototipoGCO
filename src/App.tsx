@@ -9,6 +9,7 @@ import {
   computeImpact,
   type AppliedImprovements,
   type CommunityPost,
+  type CommunityRole,
   type ImprovementKey,
 } from "./data/mockData";
 
@@ -42,32 +43,44 @@ export default function App() {
     setApplied(INITIAL_IMPROVEMENTS);
   };
 
-  const handleAddPost = (newPost: Omit<CommunityPost, "id">) => {
-    setPosts((prev) => [{ ...newPost, id: `post-${Date.now()}` }, ...prev]);
+  const handleAddPost = (newPost: Omit<CommunityPost, "id" | "comments">) => {
+    setPosts((prev) => [
+      {
+        ...newPost,
+        id: `post-${Date.now()}`,
+        comments: [],
+      },
+      ...prev,
+    ]);
   };
 
   const handlePromotePost = (post: CommunityPost) => {
     setPosts((prev) =>
-      prev.map((p) =>
-        p.id === post.id
-          ? { ...p, seciPhase: "Interiorización", status: "Validado en guía oficial" }
-          : p,
-      ),
+      prev.map((p) => (p.id === post.id ? { ...p, status: "Aprobado e implantado" } : p)),
     );
     if (post.linkedImprovement) {
       setApplied((prev) => ({ ...prev, [post.linkedImprovement!]: true }));
     }
   };
 
+  const handleAddComment = (
+    postId: string,
+    comment: { author: string; role: CommunityRole; text: string },
+  ) => {
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, comments: [...p.comments, comment] } : p)),
+    );
+  };
+
   const navItems: Array<{ id: TabId; num: string; label: string; badge?: string }> = [
-    { id: "analytics", num: "01", label: "Panel y Embudo" },
+    { id: "analytics", num: "01", label: "Panel de Control y Etapas del Trámite" },
     {
       id: "recommendations",
       num: "02",
       label: "Recomendaciones",
       badge: pendingCount > 0 ? String(pendingCount) : undefined,
     },
-    { id: "community", num: "03", label: "Comunidad SECI" },
+    { id: "community", num: "03", label: "Comunidad" },
     { id: "comparison", num: "04", label: "Antes vs. Después", badge: "DEMO" },
   ];
 
@@ -101,10 +114,9 @@ export default function App() {
                 <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
                   TramitaGC
                 </span>
-                <span className="text-[11px] text-slate-400">GCO · ULL</span>
               </div>
               <p className="mt-1 text-[11px] text-slate-400">
-                Analítica y Gestión del Conocimiento
+                Analítica y Optimización de Trámites
               </p>
             </div>
             <button
@@ -254,6 +266,7 @@ export default function App() {
               posts={posts}
               onAddPost={handleAddPost}
               onPromotePost={handlePromotePost}
+              onAddComment={handleAddComment}
             />
           )}
           {activeTab === "comparison" && (
@@ -266,8 +279,7 @@ export default function App() {
         </main>
 
         <footer className="border-t border-slate-200 bg-white px-4 py-3 text-center text-xs text-slate-500">
-          <strong>TramitaGC</strong> · Gestión del Conocimiento en las Organizaciones (ESIT - ULL,
-          2026-2027) · Eduardo Cruz González y Álvaro Martín Pérez-Dionis
+          <strong>TramitaGC</strong> · Sistema de Analítica de Procesos y Optimización de Trámites
         </footer>
       </div>
     </div>
